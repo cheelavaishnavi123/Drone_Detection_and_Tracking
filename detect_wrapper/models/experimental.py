@@ -10,9 +10,9 @@ from detect_wrapper.utils.google_utils import attempt_download
 
 class CrossConv(nn.Module):
     # Cross Convolution Downsample
-    def __init__(self, c1, c2, k=3, s=1, g=1, e=1.0, shortcut=False):
+    def _init_(self, c1, c2, k=3, s=1, g=1, e=1.0, shortcut=False):
         # ch_in, ch_out, kernel, stride, groups, expansion, shortcut
-        super(CrossConv, self).__init__()
+        super(CrossConv, self)._init_()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, c_, (1, k), (1, s))
         self.cv2 = Conv(c_, c2, (k, 1), (s, 1), g=g)
@@ -24,8 +24,8 @@ class CrossConv(nn.Module):
 
 class C3(nn.Module):
     # Cross Convolution CSP
-    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
-        super(C3, self).__init__()
+    def _init_(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
+        super(C3, self)._init_()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
         self.cv2 = nn.Conv2d(c1, c_, 1, 1, bias=False)
@@ -43,8 +43,8 @@ class C3(nn.Module):
 
 class Sum(nn.Module):
     # Weighted sum of 2 or more layers https://arxiv.org/abs/1911.09070
-    def __init__(self, n, weight=False):  # n: number of inputs
-        super(Sum, self).__init__()
+    def _init_(self, n, weight=False):  # n: number of inputs
+        super(Sum, self)._init_()
         self.weight = weight  # apply weights boolean
         self.iter = range(n - 1)  # iter object
         if weight:
@@ -64,8 +64,8 @@ class Sum(nn.Module):
 
 class GhostConv(nn.Module):
     # Ghost Convolution https://github.com/huawei-noah/ghostnet
-    def __init__(self, c1, c2, k=1, s=1, g=1, act=True):  # ch_in, ch_out, kernel, stride, groups
-        super(GhostConv, self).__init__()
+    def _init_(self, c1, c2, k=1, s=1, g=1, act=True):  # ch_in, ch_out, kernel, stride, groups
+        super(GhostConv, self)._init_()
         c_ = c2 // 2  # hidden channels
         self.cv1 = Conv(c1, c_, k, s, None, g, act)
         self.cv2 = Conv(c_, c_, 5, 1, None, c_, act)
@@ -77,8 +77,8 @@ class GhostConv(nn.Module):
 
 class GhostBottleneck(nn.Module):
     # Ghost Bottleneck https://github.com/huawei-noah/ghostnet
-    def __init__(self, c1, c2, k, s):
-        super(GhostBottleneck, self).__init__()
+    def _init_(self, c1, c2, k, s):
+        super(GhostBottleneck, self)._init_()
         c_ = c2 // 2
         self.conv = nn.Sequential(GhostConv(c1, c_, 1, 1),  # pw
                                   DWConv(c_, c_, k, s, act=False) if s == 2 else nn.Identity(),  # dw
@@ -92,8 +92,8 @@ class GhostBottleneck(nn.Module):
 
 class MixConv2d(nn.Module):
     # Mixed Depthwise Conv https://arxiv.org/abs/1907.09595
-    def __init__(self, c1, c2, k=(1, 3), s=1, equal_ch=True):
-        super(MixConv2d, self).__init__()
+    def _init_(self, c1, c2, k=(1, 3), s=1, equal_ch=True):
+        super(MixConv2d, self)._init_()
         groups = len(k)
         if equal_ch:  # equal c_ per group
             i = torch.linspace(0, groups - 1E-6, c2).floor()  # c2 indices
@@ -116,8 +116,8 @@ class MixConv2d(nn.Module):
 
 class Ensemble(nn.ModuleList):
     # Ensemble of models
-    def __init__(self):
-        super(Ensemble, self).__init__()
+    def _init_(self):
+        super(Ensemble, self)._init_()
 
     def forward(self, x, augment=False):
         y = []
@@ -137,8 +137,12 @@ def attempt_load(weights, map_location=None):
     # os.rename(os.path.join(pth,'detect_model.py'),os.path.join(pth,'yolo.py'))
     for w in weights if isinstance(weights, list) else [weights]:
         attempt_download(w)
+        import pathlib
         try:
-            model.append(torch.load(w, map_location=map_location)['model'].float().fuse().eval())  # load FP32 model
+            # model.append(torch.load(w, map_location=map_location)['model'].float().fuse().eval())  # load FP32 model
+            temp = pathlib.PosixPath
+            pathlib.PosixPath = pathlib.WindowsPath
+            model.append(torch.load(w, map_location=map_location)['model'].float().fuse().eval())
             if os.path.exists(os.path.join(pth,'yolo.py')):
                 os.rename(os.path.join(pth,'yolo.py'),os.path.join(pth,'detect_model.py'))
         except Exception as e:
@@ -146,6 +150,8 @@ def attempt_load(weights, map_location=None):
             os.rename(os.path.join(pth,'detect_model.py'),os.path.join(pth,m_name))
             model.append(torch.load(w, map_location=map_location)['model'].float().fuse().eval())  # load FP32 model
             os.rename(os.path.join(pth,m_name),os.path.join(pth,'detect_model.py'))
+        finally:
+            pathlib.PosixPath = temp
 
     # Compatibility updates
     for m in model.modules():

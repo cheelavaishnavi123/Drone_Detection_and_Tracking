@@ -1,18 +1,74 @@
-node_modules/
-build/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
 dist/
+build/
+*.egg
+*.whl
+venv/
+env/
+venv38/
+drone_env/
+.venv/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+uploads/
+outputs/
 *.mp4
+*.avi
+*.mov
+*.webm
 *.zip
 *.exe
 *.pkl
 *.h5
 *.pt
 *.jpg
+*.jpeg
 *.png
-*.webm
+*.gif
+drone_crop.jpg
 dataset/
-env/
-venv/
-.env
+testvideo/
+detect_wrapper/weights/
+
+# Frontend
+node_modules/
+build/
+dist/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# MongoDB/GridFS temp files
+*.bson
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+Thumbs.db
 .DS_Store
-venv38/
