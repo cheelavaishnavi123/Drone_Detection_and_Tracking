@@ -36,10 +36,7 @@ The system automatically determines whether a video is RGB or IR (infrared) and 
 
 The application follows a layered full-stack architecture with four main components:
 
-```
-<img width="1872" height="798" alt="image" src="https://github.com/user-attachments/assets/4a199c4c-f3ec-4268-a5c7-9e5f1be9dd83" />
-
-```
+<img width="800" src="https://github.com/user-attachments/assets/your-image-id" />
 
 ### Data Flow (8 Steps)
 
